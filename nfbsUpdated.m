@@ -1,6 +1,7 @@
 %% 3-D Brain Extraction from MRI
 % Train and cross validate a 3-D U-net for brain extraction on T1 image
 % load nifti data from /rsrch1/ip/egates1/NFBS\ Skull\ Strip/NFBSFilepaths.csv 
+% helper function files matread.m 
 
 % Clear workspace
 clear; close all; clc;
@@ -181,6 +182,7 @@ lgraph = layerGraph();
 %% Add Layer Branches
 % Add the branches of the network to the layer graph. Each branch is a linear 
 % array of layers.
+% Helper function for densenet3d upsample3dLayer.m
 
 tempLayers = [
     image3dInputLayer([64 64 64 n],"Name","input","Normalization","none")
