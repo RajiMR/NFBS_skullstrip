@@ -3,7 +3,7 @@ infoPre = niftiinfo('/rsrch1/ip/rmuthusivarajan/imaging/NFBS/nfbsOutput/Test/ima
 volPre = niftiread(infoPre);
 
 %Load raw input data
-infoRaw = niftiinfo('/rsrch1/ip/rmuthusivarajan/imaging/NFBS/NFBS_Dataset/A00037511/sub-A00037511_ses-NFB3_T1w_brainmask.nii.gz');
+infoRaw = niftiinfo('/rsrch1/ip/rmuthusivarajan/imaging/NFBS/NFBS_Dataset/A00037511/sub-A00037511_ses-NFB3_T1w.nii.gz');
 volRaw = niftiread(infoRaw);
 
 %write info to preprocessed file from raw file
