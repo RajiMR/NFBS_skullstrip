@@ -374,8 +374,8 @@ options = trainingOptions('adam', ...
 
     modelDateTime = datestr(now,'dd-mmm-yyyy-HH-MM-SS');
     [net,info] = trainNetwork(trPatchDs,lgraph,options);
-    save(['fold_' num2str(idxFold) '-trainedDensenet3d-' modelDateTime '-Epoch-' num2str(options.MaxEpochs) '.mat'],'net');
+    save(['fold_' num2str(kfold) '-trainedDensenet3d192.mat'],'net');
     infotable = struct2table(info);
-    writetable(infotable, ['fold_' num2str(idxFold) '-Densenet3dinfo-' modelDateTime '-Epoch-' num2str(options.MaxEpochs) '.txt']);
+    writetable(infotable, ['fold_' num2str(idxFold) '-Densenet3d192-info.txt']);
 %end
 
