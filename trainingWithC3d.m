@@ -45,7 +45,7 @@ for id = 1:length(idLoc)
         outV1 = single(outV);
         chn_Mean = mean(outV1,[1 2 3]);
         chn_Std = std(outV1,0,[1 2 3]);
-        scale = 1/chn_Std;
+        scale = 1./chn_Std;
     
         imgNormalized = ['normalized_T1w_',patientId,'.nii.gz'];
         imgResized = ['resized_T1w_', patientId,'.nii.gz'];
