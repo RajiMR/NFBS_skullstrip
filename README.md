@@ -2,7 +2,7 @@
 
 
 ## Run Preprocess-Resize to 192 192 192 - run Kfold - Train with Densenet3d
-matlab trainingNFBS192.m 
+matlab trainingNFBSWithC3d.m 
 
 Input datapath: inputNFBS192.json
 
@@ -12,8 +12,7 @@ upsample3dLayer.m
 dicePixelClassification3dLayer.m
 
 ## Create Test data with kfold indices & Run Segmentation on Test Data 
-matlab testNFBS192.m
+matlab testNFBSWithC3d.m
 
 ## Calculate DSC 
-matlab dsc.m
 
