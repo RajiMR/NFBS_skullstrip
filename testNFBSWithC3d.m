@@ -1,23 +1,17 @@
-%% Segmentation on Test Data
+% Segmentation on Test Data
 
 % Clear workspace
 clear; close all; clc;
 
 destination = '/rsrch1/ip/rmuthusivarajan/imaging/NFBS/192withc3d';
 
-% Images Datapath % define reader
-procVolReader = @(x) niftiread(x);
-procVolLoc = fullfile(destination,'preprocess','imgResized');
-procVolDs = imageDatastore(procVolLoc, ...
-    'FileExtensions','.gz','LabelSource','foldernames','ReadFcn',procVolReader);
+imgResizedDir = dir(fullfile(destination, 'preprocess', 'imgResized','*.gz'));
+imgFile = {imgResizedDir.name}';
+imgFolder = {imgResizedDir.folder}';
 
-% Labels Datapath % define reader
-procLblReader =  @(x) uint8(niftiread(x));
-procLblLoc = fullfile(destination,'preprocess','lblResized');
-classNames = ["background","tumor"];
-pixelLabelID = [0 1];
-procLblDs = pixelLabelDatastore(procLblLoc,classNames,pixelLabelID, ...
-    'FileExtensions','.gz','ReadFcn',procLblReader);
+lblResizedDir = dir(fullfile(destination, 'preprocess', 'lblResized','*.gz'));
+lblFile = {lblResizedDir.name}';
+lblFolder = {lblResizedDir.folder}';
 
 %%Load test indices 
 s = load('idxTest.mat');
@@ -27,16 +21,14 @@ idxTest = cat(1,c{:});
 %%Load patient id
 P = load('PId.mat');
 PId  = P.idLoc;
+%patientId = char(idLoc(id,:));
 
 C = cell(25,5);
-testPatientId = deal(C);
+[testPatientId, imgFileTest, imgFolderTest, lblFileTest, lblFolderTest] = deal(C);
 
 for kfold = 1:5
     
     disp(['Processing K-fold-' num2str(kfold)]);
-    
-    voldsTest = subset(procVolDs,idxTest{1,kfold}); %ground truth test images
-    pxdsTest = subset(procLblDs,idxTest{1,kfold}); %ground truth labels
     
     trainedNetName = ['fold_' num2str(kfold) '-trainedDensenet3d.mat'];
     load(fullfile(destination, trainedNetName));
@@ -44,35 +36,41 @@ for kfold = 1:5
     testSet = idxTest{1,kfold};
     testPatientId(:,kfold) =  PId(testSet);%create test patientid set
     save('testPatientId.mat','testPatientId');
+    
+    imgFileTest(:,kfold) = imgFile(testSet);
+    imgFolderTest(:,kfold) = imgFolder(testSet);
+    
+    lblFileTest(:,kfold) = lblFile(testSet);
+    lblFolderTest(:,kfold) = lblFolder(testSet);
    
     %create directories to store labels 
         mkdir(fullfile(destination,['predictedLabel-fold' num2str(kfold)]));
         mkdir(fullfile(destination,['groundTruthLabel-fold' num2str(kfold)]));
-    
-    id = 1;
-
-    while hasdata(voldsTest)
         
-        C = cell(1,25);
-        [vol,lbl] = deal(C);
-    
-        vol{id} = read(voldsTest);
-        lbl{id} = readNumeric(pxdsTest);
-    
-        patientId = testPatientId{id};
-    
-        predictedLabel = semanticseg(vol{id},net,'ExecutionEnvironment','cpu');
-        groundTruthLabel = lbl{id};
-       
+    for id = 1:length(imgFileTest)
+        
+        imgLoc = fullfile(imgFolderTest(id,kfold),imgFileTest(id,kfold));
+        imgName = niftiread(char(imgLoc));
+        imginfo = niftiinfo(char(imgLoc));
+               
+        lblLoc = fullfile(lblFolderTest(id,kfold),lblFileTest(id,kfold));
+        lblName = niftiread(char(lblLoc));
+        lblinfo = niftiinfo(char(lblLoc));
+            
+        patientId = char(testPatientId(id,kfold));
+               
         predLblName = ['predictedLbl_', patientId];
         grdLblName = ['groundTruthLbl_',patientId];
-     
+        
         predDir = fullfile(destination,['predictedLabel-fold' num2str(kfold)],predLblName);
         groundDir = fullfile(destination,['groundTruthLabel-fold' num2str(kfold)],grdLblName);
         
+        groundTruthLabel = lblName;
+        predictedLabel = semanticseg(imgName,net,'ExecutionEnvironment','cpu');
+        
         % save preprocessed data to folders
-        niftiwrite(uint8(predictedLabel),predDir);
-        niftiwrite(uint8(groundTruthLabel),groundDir);
+        niftiwrite(single(predictedLabel),predDir,imginfo);
+        niftiwrite(groundTruthLabel,groundDir,lblinfo);
                                
         id = id + 1;
     end
